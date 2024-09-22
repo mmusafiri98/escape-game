@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: pink;
+        }
+
+        /* Conteneur principal pour le labyrinthe et les boutons */
+        .main-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 30%;
+            margin: 70px;
+        }
+
+        /* Grille du labyrinthe */
+        .maze-container {
+            display: grid;
+            grid-template-columns: repeat(9, 90px);
+            grid-template-rows: repeat(9, 100px);
+            gap: 2px;
+            position: relative;
+            background-color: burlywood;
+        }
+
+        .right-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            margin-right: 70px;
+        }
+
+        /* Styles pour les cellules du labyrinthe */
+        .wall {
+            background-color: blue;
+            transition: background-color 0.5s ease;
+        }
+
+        /* Les murs ouverts (lorsqu'ils sont animés) */
+        .wall.open {
+            background-color: transparent;
+            pointer-events: none;
+        }
+
+        .path {
+            background-color: #fff;
+        }
+
+        .start {
+            background-color: #00ff00;
+        }
+
+        .end {
+            background-color: #ff0000;
+        }
+
+        /* Styles pour le personnage */
+        .Player {
+            position: absolute;
+            width: 90px;
+            height: 100px;
+            background-color: yellow;
+            border-radius: 50%;
+            transition: top 0.3s, left 0.3s;
+            /* Transition pour mouvement fluide */
+        }
+
+        /* Styles pour les boutons */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .button-container button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Conteneur principal -->
+    <div class="main-container">
+        <!-- Labyrinthe -->
+        <div class="maze-container" id="maze"></div>
+        <!-- Cellules du escape game -->
+        <div class="Player" id="player"></div>
+    </div>
+
+    <!-- Contenu à droite: les boutons de contrôle -->
+    <div class="right-content">
+        <div class="button-container">
+            <button onclick="moveLeft()">Left</button>
+            <button onclick="moveDown()">Down</button>
+            <button onclick="moveRight()">Right</button>
+            <button onclick="moveUp()">Up</button>
+        </div>
+    </div>
+
+    <script>
+        const player = document.getElementById('player');
+        const mazeContainer = document.getElementById('maze');
+        const mazeSize = 9;
+        const cellWidth = 90;  // Largeur d'une cellule
+        const cellHeight = 100;  // Hauteur d'une cellule
+
+        let playerPosition = { row: 0, col: 0 };
+
+        // Crée une grille 9x9 de cellules
+        function createMaze() {
+            mazeContainer.innerHTML = ''; // Vide le labyrinthe actuel
+            const maze = [];
+            for (let row = 0; row < mazeSize; row++) {
+                const rowArray = [];
+                for (let col = 0; col < mazeSize; col++) {
+                    const cell = document.createElement('div');
+
+                    if (row === 0 && col === 0) {
+                        // Case de départ
+                        cell.classList.add('start');
+                    } else if (row === mazeSize - 1 && col === mazeSize - 1) {
+                        // Case de fin
+                        cell.classList.add('end');
+                    } else if (Math.random() < 0.3) {
+                        // 30% de probabilité de créer un mur
+                        cell.classList.add('wall');
+                    } else {
+                        // Sinon, c'est un chemin
+                        cell.classList.add('path');
+                    }
+                    rowArray.push(cell);
+                    mazeContainer.appendChild(cell);
+                }
+                maze.push(rowArray);
+            }
+
+            return maze;
+        }
+
+        // Initialisation du labyrinthe
+        let maze = createMaze();
+
+        // Fonction pour mettre à jour la position du joueur dans la grille
+        function updatePlayerPosition() {
+            // Calculer la position en pixels (top, left) pour le personnage
+            const topPosition = playerPosition.row * cellHeight;
+            const leftPosition = playerPosition.col * cellWidth;
+            // Mettre à jour le style du joueur
+            player.style.top = `${topPosition}px`;
+            player.style.left = `${leftPosition}px`;
+        }
+
+        // Initialiser la position du joueur sur la grille
+        updatePlayerPosition();
+
+        // Fonctions de déplacement
+        function moveRight() {
+            if (playerPosition.col < mazeSize - 1 && !maze[playerPosition.row][playerPosition.col + 1].classList.contains('wall')) {
+                playerPosition.col++;
+                updatePlayerPosition();
+            }
+        }
+
+        function moveLeft() {
+            if (playerPosition.col > 0 && !maze[playerPosition.row][playerPosition.col - 1].classList.contains('wall')) {
+                playerPosition.col--;
+                updatePlayerPosition();
+            }
+        }
+
+        function moveDown() {
+            if (playerPosition.row < mazeSize - 1 && !maze[playerPosition.row + 1][playerPosition.col].classList.contains('wall')) {
+                playerPosition.row++;
+                updatePlayerPosition();
+            }
+        }
+
+        function moveUp() {
+            if (playerPosition.row > 0 && !maze[playerPosition.row - 1][playerPosition.col].classList.contains('wall')) {
+                playerPosition.row--;
+                updatePlayerPosition();
+            }
+        }
+
+        // Fonction pour animer les murs (ouverture/fermeture)
+        function animateWalls() {
+            const walls = document.querySelectorAll('.wall');
+            setInterval(() => {
+                walls.forEach(wall => {
+                    wall.classList.toggle('open');
+                });
+            }, 3000); // Les murs s'ouvrent/ferment toutes les 3 secondes
+        }
+
+        // Appel de l'animation des murs au chargement
+        window.onload = animateWalls;
+    </script>
+</body>
+
+</html>
